@@ -1,3 +1,22 @@
+const mysql = require('mysql');
+
+const con = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'dontworryaboutit',
+});
+
+con.connect((err) => {
+    if (err) {
+        console.log('Error connecting to Db');
+        return;
+    }
+    console.log('Connection established');
+});
+
+con.end((err) => {
+});
+
 const inquirer = require('inquirer');
 
 inquirer.prompt([
@@ -53,7 +72,25 @@ function viewInfo() {
         });
 
     function viewEmployees() {
-        console.log('view employees alphabetically')
+        const employeez = mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: 'dontworryaboutit',
+            database: 'employeesDB'
+        });
+        employeez.query('SELECT * FROM employee', (err, rows) => {
+            if (err) throw err;
+
+            rows.forEach((row) => {
+                console.log(`
+    EMPLOYEE: ${row.first_name} ${row.last_name}
+    ID: ${row.id}
+    DEPARTMENT: ${row.role_id}
+    MANAGER: ${row.manager_id}`);
+            });
+
+
+        });
     };
 
     function viewRoles() {
@@ -147,6 +184,7 @@ function updateManager() {
 function updateDepartment() {
     console.log('update department inquirer prompt');
 }
+
 
 
 
