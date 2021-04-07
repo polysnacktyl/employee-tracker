@@ -1,9 +1,11 @@
 const mysql = require('mysql');
+const inquirer = require('inquirer');
+
 
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'dontworryaboutit',
+    password: 'donworryaboutit',
 });
 
 con.connect((err) => {
@@ -17,32 +19,34 @@ con.connect((err) => {
 con.end((err) => {
 });
 
-const inquirer = require('inquirer');
+doWhat()
 
-inquirer.prompt([
-    {
-        name: 'choose',
-        type: 'list',
-        message: 'what would you like to do?',
-        choices: ['view information', 'add information', 'update information']
-    }
-])
-    .then(function (data) {
-        switch (data.choose) {
-
-            case 'view information':
-                viewInfo()
-                break;
-
-            case 'add information':
-                addInfo()
-                break;
-
-            case 'update information':
-                updateInfo()
-                break;
+function doWhat() {
+    inquirer.prompt([
+        {
+            name: 'choose',
+            type: 'list',
+            message: 'what would you like to do?',
+            choices: ['view information', 'add information', 'update information']
         }
-    });
+    ])
+        .then(function (data) {
+            switch (data.choose) {
+
+                case 'view information':
+                    viewInfo()
+                    break;
+
+                case 'add information':
+                    addInfo()
+                    break;
+
+                case 'update information':
+                    updateInfo()
+                    break;
+            }
+        });
+}
 
 function viewInfo() {
     inquirer.prompt([
@@ -50,22 +54,22 @@ function viewInfo() {
             name: 'choose',
             type: 'list',
             message: 'what information would you like to view?',
-            choices: ['employees', 'roles', 'departments']
+            choices: ['all employees', 'employees by role', 'employees by department']
         }
     ])
         .then(function (data) {
             switch (data.choose) {
 
-                case 'employees':
+                case 'all employees':
                     viewEmployees()
                     break;
 
-                case 'roles':
-                    viewRoles()
+                case 'employees by role':
+                    viewByRole()
                     break;
 
-                case 'departments':
-                    viewDepartments()
+                case 'employees by department':
+                    viewByDepartment()
                     break;
             };
 
@@ -75,7 +79,7 @@ function viewInfo() {
         const employeez = mysql.createConnection({
             host: 'localhost',
             user: 'root',
-            password: 'dontworryaboutit',
+            password: 'donworryaboutit',
             database: 'employeesDB'
         });
         employeez.query('SELECT * FROM employee', (err, rows) => {
@@ -89,15 +93,29 @@ function viewInfo() {
     MANAGER: ${row.manager_id}`);
             });
 
-
         });
+        doWhat()
     };
 
-    function viewRoles() {
-        console.log('view employees by role');
+    function viewByRole() {
+        var roleView = mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: 'donworryaboutit',
+            database: 'employeesDB'
+        });
+        roleView.connect(function (err) {
+            if (err) throw err;
+            var roles = "SELECT employee.role_id AS role, role.title AS title FROM employee JOIN role ON employee.role_id = role.title";
+            roleView.query(roles, function (err, result) {
+                if (err) throw err;
+                console.log(`${result}`);
+            });
+        });
+        doWhat()
     };
 
-    function viewDepartments() {
+    function viewByDepartment() {
         console.log('view employees by department');
     };
 
@@ -109,22 +127,22 @@ function addInfo() {
             name: 'add',
             type: 'list',
             message: 'what information would you like to add?',
-            choices: ['employee', 'role', 'department']
+            choices: ['new employee', 'new role', 'new department']
         }
     ])
         .then(function (data) {
             console.log(data.add);
             switch (data.add) {
 
-                case 'employee':
+                case 'new employee':
                     addEmployee()
                     break;
 
-                case 'role':
+                case 'new role':
                     addRole()
                     break;
 
-                case 'department':
+                case 'new department':
                     addDepartment()
                     break;
             }
