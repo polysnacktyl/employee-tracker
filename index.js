@@ -1,4 +1,4 @@
-const pword = 'dontworyyaboutit';
+const pword = 'nope';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
@@ -60,75 +60,95 @@ function viewInfo() {
             switch (data.choose) {
 
                 case 'all employees':
-                    viewEmployees()
+                    viewEmployees();
                     break;
 
                 case 'employees by role':
-                    viewByRole()
+                    viewByRole();
                     break;
 
                 case 'employees by department':
-                    viewByDepartment()
+                    viewByDepartment();
                     break;
             };
 
         });
+}
 
-    function viewEmployees() {
-        const employeez = mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: pword,
-            database: 'employeesDB'
-        });
-        employeez.query('SELECT * FROM employee', (err, rows) => {
-            if (err) throw err;
-
-            rows.forEach((row) => {
-                console.log(`
-    EMPLOYEE: ${row.first_name} ${row.last_name}
-    ID: ${row.id}
-    DEPARTMENT: ${row.role_id}
-    MANAGER: ${row.manager_id}`);
-            });
-
-        });
-        doWhat()
-    };
-
-    function viewByRole() {
-        var roleView = mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: pword,
-            database: 'employeesDB'
-        });
-        roleView.query('SELECT employee.role_id AS role, role.title AS title, employee.first_name, employee.last_name FROM role RIGHT JOIN employee ON role.id = employee.role_id ORDER BY role ASC', (err, row) => {
-            if (err) throw err;
-            row.forEach((row) => {
-                console.log(row);
-            });
-        });
-        doWhat()
-    };
-
-
-function viewByDepartment() {
-    var roleView = mysql.createConnection({
+function viewEmployees() {
+    const employeez = mysql.createConnection({
         host: 'localhost',
         user: 'root',
         password: pword,
         database: 'employeesDB'
     });
-    roleView.query('SELECT role.department_id AS role, department.id AS department, department.name FROM role LEFT JOIN department ON role.department_id = department.id ORDER BY department ASC', (err, row) => {
+    employeez.query('SELECT * FROM employee', (err, rows) => {
         if (err) throw err;
-        row.forEach((row) => {
-            console.log(`${row.name}`);
+
+        rows.forEach((row) => {
+            console.log(`
+${row.first_name} ${row.last_name} ID: ${row.id}
+dept: ${row.role_id} | manager: ${row.manager_id}
+`);
         });
+        doWhat()
     });
-    doWhat()
 };
-    };
+
+function viewByRole() {
+    inquirer.prompt([
+        {
+            name: 'title',
+            type: 'list',
+            message: 'view all in role:',
+            choices: ['Sales Lead', 'Salesperson', 'Legal Team Lead', 'Legal Associate', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant']
+        }
+    ])
+        .then(function (data) {
+            const employeez = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: pword,
+                database: 'employeesDB'
+            });
+            employeez.query(
+                'SELECT employee.first_name, employee.last_name FROM employee JOIN role ON employee.role_id=role.id WHERE ?',
+                {
+                    title: `${data.title}`,
+                },
+                (err, rows) => {
+                    if (err) throw err;
+                    console.log(
+                        `${data.title}s`)
+
+                    rows.forEach((row) => {
+                        console.log(`${row.last_name}, ${row.first_name}
+                        `);
+
+                    });
+                    doWhat();
+                })
+        })
+};
+
+
+
+// function viewByDepartment() {
+//     var roleView = mysql.createConnection({
+//         host: 'localhost',
+//         user: 'root',
+//         password: pword,
+//         database: 'employeesDB'
+//     });
+//     roleView.query('SELECT role.department_id AS role, department.id AS department, department.name FROM role RIGHT JOIN department ON role.department_id = department.id ORDER BY department ASC', (err, row) => {
+//         if (err) throw err;
+//         row.forEach((row) => {
+//             console.log(row);
+//         });
+//     });
+//     doWhat()
+// };
+
 
 function addInfo() {
     inquirer.prompt([
@@ -159,8 +179,50 @@ function addInfo() {
 }
 
 function addEmployee() {
-    console.log('add employee inquirer prompt');
+    inquirer.prompt([
+        {
+            name: 'first_name',
+            type: 'input',
+            message: 'what is the employee\'s first name?'
+        },
+        {
+            name: 'last_name',
+            type: 'input',
+            message: 'what is the employee\'s last name?'
+        },
+        {
+            name: 'role',
+            type: 'list',
+            message: 'what is the new employee\'s role?',
+            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Developer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Associate']
+        }
+    ])
+        .then((data) => {
+            var employeeAdd = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: pword,
+                database: 'employeesDB'
+            });
+            employeeAdd.query(`
+                SELECT role.id, role.title, role.department_id, employee.role_id FROM role JOIN employee ON employee.role_id = role.id ORDER BY role_id ASC`)
+            // INSERT INTO employee SET ?`,
+            // {
+            //     first_name: data.first_name,
+            //     last_name: data.last_name,
+            //     role_id: employee.role_id,
+            // },
+            // (err) => {
+            //     if (err) throw err;
+            //     console.log('new employee added.');
+            console.log(data);
+            doWhat()
+        }
+        )
 }
+//         )
+// }
+
 
 function addRole() {
     console.log('add role inquirer prompt');
