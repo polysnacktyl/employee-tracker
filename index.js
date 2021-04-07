@@ -1,6 +1,6 @@
+const pword = 'dontworyyaboutit';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const pword = 'dontworryaboutit';
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -103,103 +103,114 @@ function viewInfo() {
             password: pword,
             database: 'employeesDB'
         });
-            roleView.query('SELECT employee.role_id AS role, role.title AS title, employee.first_name, employee.last_name FROM role RIGHT JOIN employee ON role.id = employee.role_id ORDER BY role ASC', (err, row) => {
-                if (err) throw err;
-                row.forEach((row) => {
-                    console.log(row);
-                });
+        roleView.query('SELECT employee.role_id AS role, role.title AS title, employee.first_name, employee.last_name FROM role RIGHT JOIN employee ON role.id = employee.role_id ORDER BY role ASC', (err, row) => {
+            if (err) throw err;
+            row.forEach((row) => {
+                console.log(row);
             });
-            doWhat()
-        };
-    }
-
-        function viewByDepartment() {
-            console.log('view employees by department');
-        };
+        });
+        doWhat()
+    };
 
 
+function viewByDepartment() {
+    var roleView = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: pword,
+        database: 'employeesDB'
+    });
+    roleView.query('SELECT role.department_id AS role, department.id AS department, department.name FROM role LEFT JOIN department ON role.department_id = department.id ORDER BY department ASC', (err, row) => {
+        if (err) throw err;
+        row.forEach((row) => {
+            console.log(`${row.name}`);
+        });
+    });
+    doWhat()
+};
+    };
 
-        function addInfo() {
-            inquirer.prompt([
-                {
-                    name: 'add',
-                    type: 'list',
-                    message: 'what information would you like to add?',
-                    choices: ['new employee', 'new role', 'new department']
-                }
-            ])
-                .then(function (data) {
-                    console.log(data.add);
-                    switch (data.add) {
+function addInfo() {
+    inquirer.prompt([
+        {
+            name: 'add',
+            type: 'list',
+            message: 'what information would you like to add?',
+            choices: ['new employee', 'new role', 'new department']
+        }
+    ])
+        .then(function (data) {
+            console.log(data.add);
+            switch (data.add) {
 
-                        case 'new employee':
-                            addEmployee()
-                            break;
+                case 'new employee':
+                    addEmployee()
+                    break;
 
-                        case 'new role':
-                            addRole()
-                            break;
+                case 'new role':
+                    addRole()
+                    break;
 
-                        case 'new department':
-                            addDepartment()
-                            break;
-                    }
-                });
+                case 'new department':
+                    addDepartment()
+                    break;
+            }
+        });
+}
+
+function addEmployee() {
+    console.log('add employee inquirer prompt');
+}
+
+function addRole() {
+    console.log('add role inquirer prompt');
+}
+
+function addDepartment() {
+    console.log('add department prompt');
+}
+
+function updateInfo() {
+    inquirer.prompt([
+        {
+            name: 'update',
+            type: 'list',
+            message: 'what information would you like to update?',
+            choices: ['employee role', 'employee manager', 'employee department']
         }
 
-        function addEmployee() {
-            console.log('add employee inquirer prompt');
-        }
+    ])
+        .then(function (data) {
+            console.log(data.update);
+            switch (data.update) {
 
-        function addRole() {
-            console.log('add role inquirer prompt');
-        }
+                case 'employee role':
+                    updateRole()
+                    break;
 
-        function addDepartment() {
-            console.log('add department prompt');
-        }
+                case 'employee manager':
+                    updateManager()
+                    break;
 
-        function updateInfo() {
-            inquirer.prompt([
-                {
-                    name: 'update',
-                    type: 'list',
-                    message: 'what information would you like to update?',
-                    choices: ['employee role', 'employee manager', 'employee department']
-                }
+                case 'employee department':
+                    updateDepartment()
+                    break;
+            }
+        });
 
-            ])
-                .then(function (data) {
-                    console.log(data.update);
-                    switch (data.update) {
+}
 
-                        case 'employee role':
-                            updateRole()
-                            break;
+function updateRole() {
+    console.log('update role inquirer prompt');
+}
 
-                        case 'employee manager':
-                            updateManager()
-                            break;
+function updateManager() {
+    console.log('update manager inquirer prompt');
+}
 
-                        case 'employee department':
-                            updateDepartment()
-                            break;
-                    }
-                });
-
-        }
-
-        function updateRole() {
-            console.log('update role inquirer prompt');
-        }
-
-        function updateManager() {
-            console.log('update manager inquirer prompt');
-        }
-
-        function updateDepartment() {
-            console.log('update department inquirer prompt');
-        }
+function updateDepartment() {
+    console.log('update department inquirer prompt');
+}
 
 
 
