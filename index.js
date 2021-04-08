@@ -1,4 +1,4 @@
-const pword = '';
+const pword = 'nope';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
@@ -300,8 +300,6 @@ function updateDepartment() {
 }
 
 function deleteInfo() {
-    console.log('delete info function');
-
     inquirer.prompt([
         {
             name: 'delete_info',
@@ -312,29 +310,27 @@ function deleteInfo() {
     ])
 
         .then(function (data) {
-            console.log(data.update);
-            switch (data.update) {
+            switch (data.delete_info) {
 
                 case 'employee':
-                    deleteEmployee()
+                    deleteEmployee();
                     break;
 
                 case 'manager':
-                    deleteManager()
+                    deleteManager();
                     break;
 
                 case 'role':
-                    deleteRole()
+                    deleteRole();
                     break;
 
                 case 'department':
-                    deleteDepartment()
+                    deleteDepartment();
                     break;
             }
-            doWhat();
+
         })
 };
-
 
 function deleteEmployee() {
     inquirer.prompt([
@@ -350,6 +346,7 @@ function deleteEmployee() {
         }
     ])
         .then(function (data) {
+            console.log(data);
             const employeez = mysql.createConnection({
                 host: 'localhost',
                 user: 'root',
@@ -358,17 +355,21 @@ function deleteEmployee() {
             });
             employeez.query(
                 'DELETE FROM employee WHERE ?',
-                {
-                    first_name: `${employee.first_name}`,
-                    last_name: `${employee.last_name}`
-                },
-                (err, data) => {
-                    if (err) throw err;
-                    console.log(`${data.affectedRows} employee record deleted\n`);
-                });
-            doWhat();
+                [
+                    {
+                        first_name: `${data.delete_first}`
+                    },
+                    {
+                        last_name: `${data.delete_last}`
+                    }
+                ],
+                    (err, data) => {
+                if(err) throw err;
+                console.log(`${data.affectedRows} employee record deleted\n`);
+            });
         })
-}
+};
+
 
 
 
