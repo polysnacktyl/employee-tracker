@@ -1,4 +1,4 @@
-const pword = 'twopurpleoctopi*';
+const pword = '';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
@@ -26,7 +26,7 @@ function doWhat() {
             name: 'choose',
             type: 'list',
             message: 'what would you like to do?',
-            choices: ['view information', 'add information', 'update information']
+            choices: ['add information', 'view information', 'update information', 'delete information', 'exit the program']
         }
     ])
         .then(function (data) {
@@ -42,6 +42,14 @@ function doWhat() {
 
                 case 'update information':
                     updateInfo()
+                    break;
+
+                case 'delete information':
+                    deleteInfo()
+                    break;
+
+                case 'exit the program':
+                    console.log('Bye')
                     break;
             }
         });
@@ -86,10 +94,10 @@ function viewEmployees() {
         if (err) throw err;
 
         rows.forEach((row) => {
-            console.log(`
-${row.first_name} ${row.last_name} ID: ${row.id}
-dept: ${row.role_id} | manager: ${row.manager_id}
-`);
+            console.log(
+                `${row.first_name} ${row.last_name} ID: ${row.id}
+            dept: ${row.role_id} | manager: ${row.manager_id}
+            `);
         });
         doWhat()
     });
@@ -132,8 +140,6 @@ function viewByRole() {
         })
 };
 
-
-
 function viewByDepartment() {
     inquirer.prompt([
         {
@@ -151,7 +157,6 @@ function viewByDepartment() {
                 database: 'employeesDB'
             });
             departmentView.query(
-                // 'SELECT employee.first_name, employee.last_name FROM employee JOIN role ON employee.role_id=role.id WHERE ?',
                 'SELECT * FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id WHERE ?',
                 {
                     name: `${data.department_title}`,
@@ -170,7 +175,6 @@ function viewByDepartment() {
                 })
         })
 };
-
 
 function addInfo() {
     inquirer.prompt([
@@ -226,24 +230,23 @@ function addEmployee() {
                 password: pword,
                 database: 'employeesDB'
             });
-            employeeAdd.query(`
-                SELECT role.id, role.title, role.department_id, employee.role_id FROM role JOIN employee ON employee.role_id = role.id ORDER BY role_id ASC`)
-            // INSERT INTO employee SET ?`,
-            // {
-            //     first_name: data.first_name,
-            //     last_name: data.last_name,
-            //     role_id: employee.role_id,
-            // },
-            // (err) => {
-            //     if (err) throw err;
-            //     console.log('new employee added.');
-            console.log(data);
+            employeeAdd.query(
+                `SELECT role.id, role.title, role.department_id, employee.role_id FROM role JOIN employee ON employee.role_id = role.id ORDER BY role_id ASC
+                 INSERT INTO employee SET ?`,
+                {
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    role_id: employee.role_id,
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log('new employee added.');
+                    console.log(data);
+
+                })
             doWhat()
-        }
-        )
-}
-//         )
-// }
+        })
+};
 
 
 function addRole() {
@@ -285,7 +288,7 @@ function updateInfo() {
 }
 
 function updateRole() {
-    console.log('update role inquirer prompt');
+    console.log('UPDATE EMPLOYEE ROLE');
 }
 
 function updateManager() {
@@ -295,6 +298,78 @@ function updateManager() {
 function updateDepartment() {
     console.log('update department inquirer prompt');
 }
+
+function deleteInfo() {
+    console.log('delete info function');
+
+    inquirer.prompt([
+        {
+            name: 'delete_info',
+            type: 'list',
+            message: 'what would you like to delete?',
+            choices: ['employee', 'manager', 'role', 'department']
+        }
+    ])
+
+        .then(function (data) {
+            console.log(data.update);
+            switch (data.update) {
+
+                case 'employee':
+                    deleteEmployee()
+                    break;
+
+                case 'manager':
+                    deleteManager()
+                    break;
+
+                case 'role':
+                    deleteRole()
+                    break;
+
+                case 'department':
+                    deleteDepartment()
+                    break;
+            }
+            doWhat();
+        })
+};
+
+
+function deleteEmployee() {
+    inquirer.prompt([
+        {
+            name: 'delete_first',
+            type: 'input',
+            message: 'what is the employee\'s first name?'
+        },
+        {
+            name: 'delete_last',
+            type: 'input',
+            message: 'what is the employee\'s last name?'
+        }
+    ])
+        .then(function (data) {
+            const employeez = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: pword,
+                database: 'employeesDB'
+            });
+            employeez.query(
+                'DELETE FROM employee WHERE ?',
+                {
+                    first_name: `${employee.first_name}`,
+                    last_name: `${employee.last_name}`
+                },
+                (err, data) => {
+                    if (err) throw err;
+                    console.log(`${data.affectedRows} employee record deleted\n`);
+                });
+            doWhat();
+        })
+}
+
 
 
 
