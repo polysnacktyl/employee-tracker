@@ -1,4 +1,4 @@
-const pword = 'nope';
+const pword = 'twopurpleoctopi*';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
@@ -98,7 +98,7 @@ dept: ${row.role_id} | manager: ${row.manager_id}
 function viewByRole() {
     inquirer.prompt([
         {
-            name: 'title',
+            name: 'role_title',
             type: 'list',
             message: 'view all in role:',
             choices: ['Sales Lead', 'Salesperson', 'Legal Team Lead', 'Legal Associate', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant']
@@ -114,7 +114,7 @@ function viewByRole() {
             employeez.query(
                 'SELECT employee.first_name, employee.last_name FROM employee JOIN role ON employee.role_id=role.id WHERE ?',
                 {
-                    title: `${data.title}`,
+                    title: `${data.role_title}`,
                 },
                 (err, rows) => {
                     if (err) throw err;
@@ -122,7 +122,8 @@ function viewByRole() {
                         `${data.title}s`)
 
                     rows.forEach((row) => {
-                        console.log(`${row.last_name}, ${row.first_name}
+                        console.log(`
+        ${row.last_name}, ${row.first_name}
                         `);
 
                     });
@@ -133,21 +134,42 @@ function viewByRole() {
 
 
 
-// function viewByDepartment() {
-//     var roleView = mysql.createConnection({
-//         host: 'localhost',
-//         user: 'root',
-//         password: pword,
-//         database: 'employeesDB'
-//     });
-//     roleView.query('SELECT role.department_id AS role, department.id AS department, department.name FROM role RIGHT JOIN department ON role.department_id = department.id ORDER BY department ASC', (err, row) => {
-//         if (err) throw err;
-//         row.forEach((row) => {
-//             console.log(row);
-//         });
-//     });
-//     doWhat()
-// };
+function viewByDepartment() {
+    inquirer.prompt([
+        {
+            name: 'department_title',
+            type: 'list',
+            message: 'view all employees in department: ',
+            choices: ['Sales', 'Legal', 'Development', 'Accounts']
+        }
+    ])
+        .then(function (data) {
+            const departmentView = mysql.createConnection({
+                host: 'localhost',
+                user: 'root',
+                password: pword,
+                database: 'employeesDB'
+            });
+            departmentView.query(
+                // 'SELECT employee.first_name, employee.last_name FROM employee JOIN role ON employee.role_id=role.id WHERE ?',
+                'SELECT * FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id WHERE ?',
+                {
+                    name: `${data.department_title}`,
+                },
+                (err, rows) => {
+                    if (err) throw err;
+                    console.log(
+                        `${data.department_title}`)
+
+                    rows.forEach((row) => {
+                        console.log(`${row.last_name}, ${row.first_name}
+            `);
+
+                    });
+                    doWhat();
+                })
+        })
+};
 
 
 function addInfo() {
