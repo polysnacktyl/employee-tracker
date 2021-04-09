@@ -1,10 +1,11 @@
-const pword = 'nope';
+const pword = 'onthecobb';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: pword,
+    database: 'employeesDB',
 });
 
 con.connect((err) => {
@@ -15,8 +16,6 @@ con.connect((err) => {
     console.log('Connection established');
 });
 
-con.end((err) => {
-});
 
 doWhat()
 
@@ -94,10 +93,11 @@ function viewEmployees() {
         if (err) throw err;
 
         rows.forEach((row) => {
-            console.log(
-                `${row.first_name} ${row.last_name} ID: ${row.id}
-            dept: ${row.role_id} | manager: ${row.manager_id}
-            `);
+            console.table(row);
+            // console.log(
+            //     `${row.first_name} ${row.last_name} ID: ${row.id}
+            // dept: ${row.role_id} | manager: ${row.manager_id}
+            // `);
         });
         doWhat()
     });
@@ -126,13 +126,13 @@ function viewByRole() {
                 },
                 (err, rows) => {
                     if (err) throw err;
-                    console.log(
-                        `${data.title}s`)
+
 
                     rows.forEach((row) => {
-                        console.log(`
-        ${row.last_name}, ${row.first_name}
-                        `);
+                        console.table(row)
+                        //                 console.log(`
+                        // ${row.last_name}, ${row.first_name}
+                        //                 `);
 
                     });
                     doWhat();
@@ -220,33 +220,31 @@ function addEmployee() {
             name: 'role',
             type: 'list',
             message: 'what is the new employee\'s role?',
-            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Developer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Associate']
+            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Team Associate']
         }
     ])
         .then((data) => {
-            var employeeAdd = mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: pword,
-                database: 'employeesDB'
-            });
-            employeeAdd.query(
-                `SELECT role.id, role.title, role.department_id, employee.role_id FROM role JOIN employee ON employee.role_id = role.id ORDER BY role_id ASC
-                 INSERT INTO employee SET ?`,
-                {
-                    first_name: data.first_name,
-                    last_name: data.last_name,
-                    role_id: employee.role_id,
-                },
-                (err) => {
-                    if (err) throw err;
-                    console.log('new employee added.');
-                    console.log(data);
+            con.query('SELECT id FROM role WHERE ?',
+                { title: data.role },
+                (err, result) => {
+                    var role_id = result[0].id;
+                    con.query('INSERT INTO employee SET ?',
+                        {
+                            first_name: data.first_name,
+                            last_name: data.last_name,
+                            role_id: role_id
+                        },
+                        (err,data) => {
+                            if (err) throw err;
+                            console.log(`${data.affectedRows} employee record added\n`);
+                        }
+                    );
+                });
 
-                })
-            doWhat()
-        })
-};
+
+        });
+}
+
 
 
 function addRole() {
@@ -354,7 +352,7 @@ function deleteEmployee() {
                 database: 'employeesDB'
             });
             employeez.query(
-                'DELETE FROM employee WHERE ?',
+                'DELETE * FROM employee WHERE ?',
                 [
                     {
                         first_name: `${data.delete_first}`
@@ -363,15 +361,10 @@ function deleteEmployee() {
                         last_name: `${data.delete_last}`
                     }
                 ],
-                    (err, data) => {
-                if(err) throw err;
-                console.log(`${data.affectedRows} employee record deleted\n`);
-            });
+                (err, data) => {
+                    if (err) throw err;
+                    console.log(`${data.affectedRows} employee record deleted\n`);
+                });
         })
+    doWhat();
 };
-
-
-
-
-
-
