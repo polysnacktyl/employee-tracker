@@ -1,4 +1,4 @@
-const pword = 'onthecobb';
+const pword = 'dotenvenvy';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const con = mysql.createConnection({
@@ -94,10 +94,6 @@ function viewEmployees() {
 
         rows.forEach((row) => {
             console.table(row);
-            // console.log(
-            //     `${row.first_name} ${row.last_name} ID: ${row.id}
-            // dept: ${row.role_id} | manager: ${row.manager_id}
-            // `);
         });
         doWhat()
     });
@@ -129,10 +125,8 @@ function viewByRole() {
 
 
                     rows.forEach((row) => {
-                        console.table(row)
-                        //                 console.log(`
-                        // ${row.last_name}, ${row.first_name}
-                        //                 `);
+                        console.table(row);
+
 
                     });
                     doWhat();
@@ -167,8 +161,7 @@ function viewByDepartment() {
                         `${data.department_title}`)
 
                     rows.forEach((row) => {
-                        console.log(`${row.last_name}, ${row.first_name}
-            `);
+                        console.table(row);
 
                     });
                     doWhat();
@@ -234,7 +227,7 @@ function addEmployee() {
                             last_name: data.last_name,
                             role_id: role_id
                         },
-                        (err,data) => {
+                        (err, data) => {
                             if (err) throw err;
                             console.log(`${data.affectedRows} employee record added\n`);
                         }
@@ -344,27 +337,17 @@ function deleteEmployee() {
         }
     ])
         .then(function (data) {
-            console.log(data);
-            const employeez = mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: pword,
-                database: 'employeesDB'
-            });
-            employeez.query(
-                'DELETE * FROM employee WHERE ?',
-                [
-                    {
-                        first_name: `${data.delete_first}`
-                    },
-                    {
-                        last_name: `${data.delete_last}`
-                    }
-                ],
+            con.query('DELETE FROM employee WHERE ?',
+                [{
+                    first_name: data.delete_first
+                },
+                {
+                    last_name: data.delete_last
+                }]
+            ),
                 (err, data) => {
                     if (err) throw err;
                     console.log(`${data.affectedRows} employee record deleted\n`);
-                });
-        })
-    doWhat();
+                };
+        });
 };
