@@ -1,11 +1,13 @@
-const pword = 'dotenvenvy';
+const pword = 'blerp';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: pword,
     database: 'employeesDB',
+    // debug: true,
 });
 
 con.connect((err) => {
@@ -16,8 +18,9 @@ con.connect((err) => {
     console.log('Connection established');
 });
 
+const ROLES = ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Team Associate'];
 
-doWhat()
+doWhat();
 
 function doWhat() {
     inquirer.prompt([
@@ -60,7 +63,7 @@ function viewInfo() {
             name: 'choose',
             type: 'list',
             message: 'what information would you like to view?',
-            choices: ['all employees', 'employees by role', 'employees by department']
+            choices: ['all employees', 'employees by role', 'employees by department', 'return to the menu']
         }
     ])
         .then(function (data) {
@@ -77,26 +80,25 @@ function viewInfo() {
                 case 'employees by department':
                     viewByDepartment();
                     break;
+                case 'return to the menu':
+                    doWhat();
+                    break;
             };
 
         });
 }
 
 function viewEmployees() {
-    const employeez = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: pword,
-        database: 'employeesDB'
-    });
-    employeez.query('SELECT * FROM employee', (err, rows) => {
-        if (err) throw err;
+    con.query('SELECT first_name as firstName, last_name AS lastName, employee.id AS employeeID, manager_id as managerID, department.name AS deptName, department.id AS deptID, role.title AS jobTitle, role.id AS jobTitleCode FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id ORDER BY last_name ASC',
+        (err, rows) => {
+            // console.log(rows);
+            if (err) throw err;
 
-        rows.forEach((row) => {
-            console.table(row);
+            rows.forEach((row) => {
+                console.table(row);
+            });
+            doWhat()
         });
-        doWhat()
-    });
 };
 
 function viewByRole() {
@@ -105,18 +107,12 @@ function viewByRole() {
             name: 'role_title',
             type: 'list',
             message: 'view all in role:',
-            choices: ['Sales Lead', 'Salesperson', 'Legal Team Lead', 'Legal Associate', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant']
+            choices: ROLES
         }
     ])
         .then(function (data) {
-            const employeez = mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: pword,
-                database: 'employeesDB'
-            });
-            employeez.query(
-                'SELECT employee.first_name, employee.last_name FROM employee JOIN role ON employee.role_id=role.id WHERE ?',
+            con.query(
+                'SELECT * FROM employee JOIN role ON employee.role_id = role.id WHERE ?',
                 {
                     title: `${data.role_title}`,
                 },
@@ -144,13 +140,7 @@ function viewByDepartment() {
         }
     ])
         .then(function (data) {
-            const departmentView = mysql.createConnection({
-                host: 'localhost',
-                user: 'root',
-                password: pword,
-                database: 'employeesDB'
-            });
-            departmentView.query(
+            con.query(
                 'SELECT * FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id WHERE ?',
                 {
                     name: `${data.department_title}`,
@@ -175,7 +165,7 @@ function addInfo() {
             name: 'add',
             type: 'list',
             message: 'what information would you like to add?',
-            choices: ['new employee', 'new role', 'new department']
+            choices: ['new employee', 'new role', 'new department', 'return to the menu']
         }
     ])
         .then(function (data) {
@@ -192,6 +182,9 @@ function addInfo() {
 
                 case 'new department':
                     addDepartment()
+                    break;
+                case 'return to the menu':
+                    doWhat();
                     break;
             }
         });
@@ -213,7 +206,7 @@ function addEmployee() {
             name: 'role',
             type: 'list',
             message: 'what is the new employee\'s role?',
-            choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Team Associate']
+            choices: ROLES
         }
     ])
         .then((data) => {
@@ -229,23 +222,26 @@ function addEmployee() {
                         },
                         (err, data) => {
                             if (err) throw err;
-                            console.log(`${data.affectedRows} employee record added\n`);
+                            console.table(data);
+                            console.log(`\n ${data.affectedRows} employee added\n`);
                         }
                     );
+                    doWhat();
+
                 });
 
 
         });
-}
+};
 
 
 
 function addRole() {
-    console.log('add role inquirer prompt');
+    console.log('function under construction. have a lovely day.');
 }
 
 function addDepartment() {
-    console.log('add department prompt');
+    console.log('function under construction. have a lovely day.');
 }
 
 function updateInfo() {
@@ -254,7 +250,7 @@ function updateInfo() {
             name: 'update',
             type: 'list',
             message: 'what information would you like to update?',
-            choices: ['employee role', 'employee manager', 'employee department']
+            choices: ['employee role', 'employee manager', 'employee department', 'return to the menu']
         }
 
     ])
@@ -273,21 +269,83 @@ function updateInfo() {
                 case 'employee department':
                     updateDepartment()
                     break;
+                case 'return to the menu':
+                    doWhat();
+                    break;
             }
+        });
+
+};
+
+function updateRole() {
+    inquirer.prompt([
+        {
+            name: 'first_name',
+            type: 'input',
+            message: 'what is the employee\'s first name?',
+        },
+        {
+            name: 'last_name',
+            type: 'input',
+            message: 'what is the employee\'s last name?',
+        },
+        {
+            name: 'old_role',
+            type: 'list',
+            message: 'select the employee\'s former role.',
+            choices: ROLES
+        },
+        {
+            name: 'new_role',
+            type: 'list',
+            message: 'select the employee\'s new role.',
+            choices: ROLES
+        }
+    ])
+
+        .then((data) => {
+            // var newRoleId, employee_id;
+            // Query for the role_id that corresponds to the new_role
+            con.query('SELECT id FROM role WHERE role.title = ?',
+                data.new_role,
+                (err, result) => {
+                    if (err) throw err;
+                    newRoleId = parseInt(result[0].id);
+                }
+            );
+
+            // Query for the employee id that corresponds to the first, last, and old_role
+            con.query('SELECT employee.id FROM employee JOIN role ON employee.role_id = role.id WHERE employee.first_name = ? AND employee.last_name = ? AND role.title = ?',
+                [
+                    data.first_name,
+                    data.last_name,
+                    data.old_role
+                ],
+                (err, result) => {
+                    if (err) throw err;
+                    employee_id = parseInt(result[0].id);
+                    // Query to update the employee based on the ids we found.
+                    con.query('UPDATE employee SET role_id = ? WHERE id = ?', [newRoleId, employee_id],
+                        (err, data) => {
+                            if (err) throw err;
+                            console.log(`\n ${data.affectedRows} records updated. \n`);
+                        }
+                    );
+
+                }
+            );
+
+            doWhat();
         });
 
 }
 
-function updateRole() {
-    console.log('UPDATE EMPLOYEE ROLE');
-}
-
 function updateManager() {
-    console.log('update manager inquirer prompt');
+    console.log('function under construction. have a lovely day.');
 }
 
 function updateDepartment() {
-    console.log('update department inquirer prompt');
+    console.log('function under construction. have a lovely day.');
 }
 
 function deleteInfo() {
@@ -296,7 +354,7 @@ function deleteInfo() {
             name: 'delete_info',
             type: 'list',
             message: 'what would you like to delete?',
-            choices: ['employee', 'manager', 'role', 'department']
+            choices: ['employee', 'manager', 'role', 'department', 'return to the menu']
         }
     ])
 
@@ -317,6 +375,9 @@ function deleteInfo() {
 
                 case 'department':
                     deleteDepartment();
+                    break;
+                case 'return to the menu':
+                    doWhat();
                     break;
             }
 
@@ -343,11 +404,25 @@ function deleteEmployee() {
                 },
                 {
                     last_name: data.delete_last
-                }]
-            ),
+                }
+                ]),
                 (err, data) => {
                     if (err) throw err;
                     console.log(`${data.affectedRows} employee record deleted\n`);
                 };
         });
 };
+
+
+function deleteManager() {
+    console.log('function under construction. have a lovely day.');
+};
+
+function deleteRole() {
+    console.log('function under construction. have a lovely day.');
+};
+
+function deleteDepartment() {
+    console.log('function under construction. have a lovely day.');
+};
+
