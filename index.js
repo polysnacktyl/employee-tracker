@@ -1,13 +1,11 @@
-const pword = 'blerp';
+const pword = 'Radiohead11';
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const cTable = require('console.table');
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: pword,
     database: 'employeesDB',
-    // debug: true,
 });
 
 con.connect((err) => {
@@ -20,6 +18,11 @@ con.connect((err) => {
 
 const ROLES = ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Legal Team Associate'];
 
+
+// The command-line application should allow users to:
+// Add departments, roles, employees
+// View departments, roles, employees
+// Update employee roles
 doWhat();
 
 function doWhat() {
@@ -89,16 +92,19 @@ function viewInfo() {
 }
 
 function viewEmployees() {
-    con.query('SELECT first_name as firstName, last_name AS lastName, employee.id AS employeeID, manager_id as managerID, department.name AS deptName, department.id AS deptID, role.title AS jobTitle, role.id AS jobTitleCode FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id ORDER BY last_name ASC',
+    con.query('SELECT last_name AS lastName, first_name as firstName, employee.id AS employeeID, manager_id as managerID, department.name AS deptName, department.id AS deptID, role.title AS jobTitle, role.id AS jobTitleCode FROM employee JOIN role ON employee.role_id = role.id JOIN department ON department.id = role.department_id ORDER BY last_name ASC',
         (err, rows) => {
             // console.log(rows);
             if (err) throw err;
 
-            rows.forEach((row) => {
-                console.table(row);
-            });
-            doWhat()
+            // rows.forEach((row) => {
+            console.log(`\n`)
+            console.table(rows),
+                console.log(`\n`);
+
+
         });
+    doWhat()
 };
 
 function viewByRole() {
@@ -120,13 +126,14 @@ function viewByRole() {
                     if (err) throw err;
 
 
-                    rows.forEach((row) => {
-                        console.table(row);
+                    console.log(`\n`)
+                    console.table(rows),
+                        console.log(`\n`);
 
 
-                    });
-                    doWhat();
-                })
+                });
+            doWhat();
+
         })
 };
 
@@ -147,15 +154,13 @@ function viewByDepartment() {
                 },
                 (err, rows) => {
                     if (err) throw err;
-                    console.log(
-                        `${data.department_title}`)
+                    console.log(`\n`),
+                        console.table(rows),
+                        console.log(`\n`);
 
-                    rows.forEach((row) => {
-                        console.table(row);
+                });
+            doWhat();
 
-                    });
-                    doWhat();
-                })
         })
 };
 
@@ -221,24 +226,23 @@ function addEmployee() {
                             role_id: role_id
                         },
                         (err, data) => {
+                            console.log(`\n ${data.affectedRows} employee record added`),
+                                console.log(`\n`);
                             if (err) throw err;
-                            console.table(data);
-                            console.log(`\n ${data.affectedRows} employee added\n`);
                         }
                     );
-                    doWhat();
 
+                    doWhat();
                 });
 
 
         });
+
 };
-
-
 
 function addRole() {
     console.log('function under construction. have a lovely day.');
-}
+};
 
 function addDepartment() {
     console.log('function under construction. have a lovely day.');
@@ -410,9 +414,11 @@ function deleteEmployee() {
                     if (err) throw err;
                     console.log(`${data.affectedRows} employee record deleted\n`);
                 };
-        });
-};
-
+                doWhat();
+            });
+       };
+  
+    
 
 function deleteManager() {
     console.log('function under construction. have a lovely day.');
